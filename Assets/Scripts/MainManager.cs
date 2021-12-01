@@ -11,6 +11,8 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text NameText;
+    public Text HighScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -36,6 +38,20 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        //Player's name from main menu
+        if (NameTrackerSingleton.Instance != null)
+        {
+            NameText.text += " " + NameTrackerSingleton.Instance.GetName();
+        }
+        else //skipped the main menu, must be a dev
+        {
+            NameText.text += " DEV";
+        }
+
+        //Highscore stuff
+        SaveData curSave = SaveManager.LoadTheData();
+        HighScoreText.text = "BestScore: " + curSave.highScore + " ||| Name: " + curSave.playerName;
     }
 
     private void Update()
@@ -70,6 +86,14 @@ public class MainManager : MonoBehaviour
 
     public void GameOver()
     {
+        SaveData curSave = SaveManager.LoadTheData();
+        if (m_Points > curSave.highScore) //new HighScore, yay!
+        {
+            curSave.highScore = m_Points;
+            curSave.playerName = NameTrackerSingleton.Instance == null ? "DEV" : NameTrackerSingleton.Instance.GetName();
+        }
+        SaveManager.SaveTheData(curSave);
+
         m_GameOver = true;
         GameOverText.SetActive(true);
     }
